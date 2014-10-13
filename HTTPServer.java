@@ -8,8 +8,8 @@ import java.net.*;
 import java.util.*;
 
 public final class HTTPServer {
-    public static int serverPort = 9999;    // default port CHANGE THIS
-    public static String http_root_path = "";    // rooted default path in your mathlab area
+    public static int serverPort = 35350;    // default port CHANGE THIS
+    public static String http_root_path = "./";    // rooted default path in your mathlab area
 
     public static void main(String args[]) throws Exception  {
 	// ADD_CODE: allow the user to choose a different port, as arg[0]  
@@ -41,7 +41,7 @@ public final class HTTPServer {
 		 */
 
 		// create buffered reader for client input
-		BufferedReader inFromClient = // ADD_CODE
+		BufferedReader inFromClient = null;// ADD_CODE
 
 		String requestLine = null;	// the HTTP request line
 		String requestHeader = null;	// HTTP request header line
@@ -50,7 +50,7 @@ public final class HTTPServer {
 		 * We will handle the request line below, but first, read and
 		 * print to stdout any request headers (which we will ignore).
 		 */
-		requestLine = // ADD_CODE
+		requestLine = "TODO HERE";// ADD_CODE
 
 		// now back to the request line; tokenize the request
 		StringTokenizer tokenizedLine = new StringTokenizer(requestLine);
@@ -63,7 +63,9 @@ public final class HTTPServer {
 		    if (urlName.startsWith("/") == true )
 			urlName  = urlName.substring(1);
 		    
-		    generateResponse(urlName, connectionSocket);
+                    
+                    // TODO HERE
+		    //generateResponse(urlName, connectionSocket);
 
 		} 
 		else 
@@ -78,14 +80,15 @@ public final class HTTPServer {
     {
 	// ADD_CODE: create an output stream  
 
-	String fileLoc = // ADD_CODE: map urlName to rooted path  
+	String fileLoc = "TODO";// ADD_CODE: map urlName to rooted path  
 	System.out.println ("Request Line: GET " + fileLoc);
 
 	File file = new File( fileLoc );
 	if (!file.isFile())
 	{
 	    // generate 404 File Not Found response header
-	    outToClient.writeBytes("HTTP/1.0 404 File Not Found\r\n");
+	    //outToClient.writeBytes("HTTP/1.0 404 File Not Found\r\n");
+            
 	    // and output a copy to server's stdout
 	    System.out.println ("HTTP/1.0 404 File Not Found\r\n");
 	} else {
@@ -104,7 +107,8 @@ public final class HTTPServer {
 	    // ADD_CODE: generate HTTP Content-Length response header; output to stdout
 
 	    // send file content
-	    outToClient.write(fileInBytes, 0, numOfBytes);
+	    //outToClient.write(fileInBytes, 0, numOfBytes);
+            
 	}  // end else (file found case)
 
 	// close connectionSocket
