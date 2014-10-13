@@ -12,12 +12,36 @@ public final class HTTPServer {
     public static String http_root_path = "./";    // rooted default path in your mathlab area
 
     public static void main(String args[]) throws Exception  {
+        boolean isOK = true;
+        String errMsg = "";
+        
 	// ADD_CODE: allow the user to choose a different port, as arg[0]  
-
 	// ADD_CODE: allow the user to choose a different http_root_path, as arg[1] 
-
 	// display error on server stdout if usage is incorrect
-	if (args.length > 2) {
+        if (args.length > 2) {
+            isOK = false;
+            errMsg = "Too many arguments.";
+        }
+        
+        if (isOK) {
+            if (args.length >= 1) {
+                // if at least 1 argument, must have port#
+                try {
+                    serverPort = Integer.parseInt(args[0]);
+                }
+                catch (Exception e) {
+                    isOK = false;
+                    errMsg = "Invalid port number.";
+                }
+            }
+            if (2 == args.length) {
+                // 2 args, port and path, no sanity check for path
+                http_root_path = args[1];
+            }
+        }
+        
+        if (!isOK) {
+            System.out.println(errMsg);
 	    System.out.println("usage: java HTTPServer [port_# [http_root_path]]");
 	    System.exit(0);
 	}
