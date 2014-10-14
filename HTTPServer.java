@@ -8,55 +8,63 @@ import java.net.*;
 import java.util.*;
 
 public final class HTTPServer {
-    public static int serverPort = 35350;    // default port CHANGE THIS
+    public static int serverPort = 35350;    // default port 35350-35359
     public static String http_root_path = "./";    // rooted default path in your mathlab area
 
-    public static void main(String args[]) throws Exception  {
-        boolean isOK = true;
-        String errMsg = "";
+    private static ServerSocket welcomeSocket; //Listening
+    private static Socket connectionSocket; //Connect to client
+    private static boolean isOK;
+    private static String errMsg;
+    
+    public static void main(String args[]) throws Exception  
+    {
+        isOK = true;
+        errMsg = "";
+        String msg;
         
-	// ADD_CODE: allow the user to choose a different port, as arg[0]  
-	// ADD_CODE: allow the user to choose a different http_root_path, as arg[1] 
-	// display error on server stdout if usage is incorrect
-        if (args.length > 2) {
-            isOK = false;
-            errMsg = "Too many arguments.";
-        }
-        
-        if (isOK) {
-            if (args.length >= 1) {
-                // if at least 1 argument, must have port#
-                try {
-                    serverPort = Integer.parseInt(args[0]);
-                }
-                catch (Exception e) {
-                    isOK = false;
-                    errMsg = "Invalid port number.";
-                }
-            }
-            if (2 == args.length) {
-                // 2 args, port and path, no sanity check for path
-                http_root_path = args[1];
-            }
-        }
+        // Get arguments
+	processArgs(args);
         
         if (!isOK) {
-            System.out.println(errMsg);
+            System.err.println(errMsg);
 	    System.out.println("usage: java HTTPServer [port_# [http_root_path]]");
 	    System.exit(0);
 	}
 
-	// ADD_CODE: create server socket 
-
-	// ADD_CODE: display server stdout message indicating listening
+	// create server socket       
+        try {
+            welcomeSocket = new ServerSocket(serverPort);
+        }
+        catch (Exception e) {
+            isOK = false;
+            errMsg = "Error creating server socket: " + e.getMessage();
+        }
+	// display server stdout message indicating listening
 	// on port # with server root path ... 
-
+        if (isOK) 
+        {
+            msg = "HTTP Server started listening on port " + serverPort +
+                    " with server root path at " + http_root_path;
+            System.out.println(msg);
+        } 
+        else 
+        {
+            System.err.println(errMsg);
+            System.exit(1);
+        }
 	// server runs continuously
-	while (true) {
-	    try {
-		// ADD_CODE: take a waiting connection from the accepted queue 
-
-		// ADD_CODE: display on server stdout the request origin  
+	while (true) 
+        {
+	    try 
+            {
+		// take a waiting connection from the accepted queue 
+                System.out.println("\nListening for connection request...");
+                connectionSocket = welcomeSocket.accept();
+		// display on server stdout the request origin  
+                msg = "Connection accepted, IP:" + 
+                        connectionSocket.getInetAddress() +
+                        " Port:" + connectionSocket.getPort();
+                System.out.println(msg);
 	
 		/* you may wish to factor out the remainder of this
 		 * try-block code as a helper method, that could be used
@@ -94,9 +102,13 @@ public final class HTTPServer {
 		} 
 		else 
 		    System.out.println("Bad Request Message");
-	    } catch (Exception e) {
-		}
-	}  // end while true 
+            } 
+            catch (Exception e) 
+            {
+                errMsg = e.getMessage();
+                isOK = false;
+            }
+        }  // end while true 
 	
     } // end main
 
@@ -138,5 +150,32 @@ public final class HTTPServer {
 	// close connectionSocket
 	connectionSocket.close();
     } // end of generateResponse
+    
+    private static void processArgs(String args[]) {
+        // allow the user to choose a different port, as arg[0]  
+	// allow the user to choose a different http_root_path, as arg[1] 
+	// display error on server stdout if usage is incorrect
+        if (args.length > 2) {
+            isOK = false;
+            errMsg = "Too many arguments.";
+        }
+        
+        if (isOK) {
+            if (args.length >= 1) {
+                // if at least 1 argument, must have port#
+                try {
+                    serverPort = Integer.parseInt(args[0]);
+                }
+                catch (Exception e) {
+                    isOK = false;
+                    errMsg = "Invalid port number.";
+                }
+            }
+            if (2 == args.length) {
+                // 2 args, port and path, no sanity check for path
+                http_root_path = args[1];
+            }
+        }
+    }
     
 } // end of class HTTPServer
