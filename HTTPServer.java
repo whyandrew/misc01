@@ -64,49 +64,63 @@ public final class HTTPServer {
                 msg = "Connection accepted, IP:" + 
                         connectionSocket.getInetAddress() +
                         " Port:" + connectionSocket.getPort();
-                System.out.println(msg);
-	
-		/* you may wish to factor out the remainder of this
-		 * try-block code as a helper method, that could be used
-		 * by your multi-threaded solution, since it will require
-		 * essentially the same logic for its threads.
-		 */
+                System.out.println(msg);	
 
 		// create buffered reader for client input
-		BufferedReader inFromClient = null;// ADD_CODE
+		BufferedReader inFromClient = 
+                    new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
 
-		String requestLine = null;	// the HTTP request line
-		String requestHeader = null;	// HTTP request header line
+                // First line = request line
+                // Second line = header line(s)
+		String requestLine = inFromClient.readLine();
+		String requestHeader = inFromClient.readLine();	
+                if (requestLine == null || requestLine.equals("") ||
+                        requestHeader == null || requestHeader.equals(""))
+                {
+                    isOK = false;
+                    System.out.println("Empty request or header lines");
+                }
 
 		/* Read the HTTP request line and display it on Server stdout.
 		 * We will handle the request line below, but first, read and
 		 * print to stdout any request headers (which we will ignore).
 		 */
-		requestLine = "TODO HERE";// ADD_CODE
+                System.out.println("Request:\n\t" + requestLine);
+                // Loop through all header lines
+                System.out.println("Headers:");
+                do 
+                {
+                    System.out.println("\t" + requestHeader);
+                    requestHeader = inFromClient.readLine();
+                } while (requestHeader != null && !requestHeader.equals(""));
+                
+                if (isOK) 
+                {
+                    // now back to the request line; tokenize the request
+                    StringTokenizer tokenizedLine = new StringTokenizer(requestLine);
+                    // process the request
+                    if (tokenizedLine.nextToken().equals("GET")) 
+                    {    
+                        // parse URL to retrieve file name
+                        if (tokenizedLine.hasMoreTokens()) 
+                        {
+                            String urlName = tokenizedLine.nextToken();
 
-		// now back to the request line; tokenize the request
-		StringTokenizer tokenizedLine = new StringTokenizer(requestLine);
-		// process the request
-		if (tokenizedLine.nextToken().equals("GET")) {
-		    String urlName = null;	    
-		    // parse URL to retrieve file name
-		    urlName = tokenizedLine.nextToken();
-	    
-		    if (urlName.startsWith("/") == true )
-			urlName  = urlName.substring(1);
-		    
-                    
-                    // TODO HERE
-		    //generateResponse(urlName, connectionSocket);
+                            if (urlName.startsWith("/") == true )
+                                urlName  = urlName.substring(1);
 
-		} 
-		else 
-		    System.out.println("Bad Request Message");
+                            generateResponse(urlName, connectionSocket);
+                        }
+                        else
+                            System.out.println("No URL in request");
+                    } 
+                    else 
+                        System.out.println("Bad Request Message");
+                }
             } 
             catch (Exception e) 
             {
-                errMsg = e.getMessage();
-                isOK = false;
+                System.err.println(e.getMessage());
             }
         }  // end while true 
 	
@@ -151,7 +165,8 @@ public final class HTTPServer {
 	connectionSocket.close();
     } // end of generateResponse
     
-    private static void processArgs(String args[]) {
+    private static void processArgs(String args[]) 
+    {
         // allow the user to choose a different port, as arg[0]  
 	// allow the user to choose a different http_root_path, as arg[1] 
 	// display error on server stdout if usage is incorrect
@@ -168,12 +183,17 @@ public final class HTTPServer {
                 }
                 catch (Exception e) {
                     isOK = false;
-                    errMsg = "Invalid port number.";
+                    errMsg = "Invalid port number: " + e.getMessage();
                 }
-            }
-            if (2 == args.length) {
-                // 2 args, port and path, no sanity check for path
-                http_root_path = args[1];
+                if (2 == args.length) {
+                    // 2 args, port and path, no sanity check for path
+                    http_root_path = args[1];
+                    //Add a "/" to end of path if needs
+                    if (!http_root_path.endsWith("/"))
+                    {
+                        http_root_path += "/";
+                    }
+                }
             }
         }
     }
