@@ -1,0 +1,26 @@
+8.1  GET
+
+   The GET method means retrieve whatever information (in the form of an
+   entity) is identified by the Request-URI. If the Request-URI refers
+   to a data-producing process, it is the produced data which shall be
+   returned as the entity in the response and not the source text of the
+   process, unless that text happens to be the output of the process.
+
+   The semantics of the GET method changes to a "conditional GET" if the
+   request message includes an If-Modified-Since header field. A
+   conditional GET method requests that the identified resource be
+   transferred only if it has been modified since the date given by the
+   If-Modified-Since header, as described in Section 10.9. The
+   conditional GET method is intended to reduce network usage by
+   allowing cached entities to be refreshed without requiring multiple
+   requests or transferring unnecessary data.
+
+8.2  HEAD
+
+   The HEAD method is identical to GET except that the server must not
+   return any Entity-Body in the response. The metainformation contained
+   in the HTTP headers in response to a HEAD request should be identical
+   to the information sent in response to a GET request. This method can
+   be used for obtaining metainformation about the resource identified
+   by the Request-URI without transferring the Entity-Body itself. This
+   method is often used for testing hypertext links for validity,

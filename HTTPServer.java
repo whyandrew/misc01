@@ -9,7 +9,7 @@ import java.util.*;
 
 public final class HTTPServer {
     public static int serverPort = 35350;    // default port 35350-35359
-    public static String http_root_path = "./";    // rooted default path in your mathlab area
+    public static String http_root_path = "C:\\Users\\Andrew\\Documents\\GitHub\\misc01";    // rooted default path in your mathlab area
 
     private static ServerSocket welcomeSocket; //Listening
     private static Socket connectionSocket; //Connect to client
@@ -54,10 +54,12 @@ public final class HTTPServer {
         }
 	// server runs continuously
 	while (true) 
-        {
+        {   
+            isOK = true;
 	    try 
             {
 		// take a waiting connection from the accepted queue 
+                System.out.println("________________________________________");
                 System.out.println("\nListening for connection request...");
                 connectionSocket = welcomeSocket.accept();
 		// display on server stdout the request origin  
@@ -122,22 +124,24 @@ public final class HTTPServer {
             {
                 System.err.println(e.getMessage());
             }
-        }  // end while true 
-	
+        }  // end while true 	
     } // end main
 
     private static void generateResponse(String urlName, Socket connectionSocket) throws Exception
     {
-	// ADD_CODE: create an output stream  
+	// create an output stream  
+        DataOutputStream outToClient =
+                new DataOutputStream(connectionSocket.getOutputStream());
 
-	String fileLoc = "TODO";// ADD_CODE: map urlName to rooted path  
-	System.out.println ("Request Line: GET " + fileLoc);
+	String fileLoc = http_root_path + urlName;//map urlName to rooted path  
+	System.out.println ("\nRequest Line: GET " + fileLoc);
 
 	File file = new File( fileLoc );
 	if (!file.isFile())
 	{
 	    // generate 404 File Not Found response header
-	    //outToClient.writeBytes("HTTP/1.0 404 File Not Found\r\n");
+	    outToClient.writeBytes("HTTP/1.0 404 File Not Found\r\n");
+            outToClient.writeBytes("\r\n404 File Not Found!");
             
 	    // and output a copy to server's stdout
 	    System.out.println ("HTTP/1.0 404 File Not Found\r\n");
@@ -150,14 +154,50 @@ public final class HTTPServer {
 	    byte[] fileInBytes = new byte[numOfBytes];
 	    inFile.read(fileInBytes);
 
-	    // ADD_CODE: generate HTTP response line; output to stdout
+	    //generate HTTP response line; output to stdout
+            outToClient.writeBytes("HTTP/1.0 200 OK\r\n");
+            System.out.println("HTTP/1.0 200 OK\r\n");
 	
-	    // ADD_CODE: generate HTTP Content-Type response header; output to stdout
-
-	    // ADD_CODE: generate HTTP Content-Length response header; output to stdout
+	    // generate HTTP Content-Type response header; output to stdout
+            // generate HTTP Content-Length response header; output to stdout
+            String contentType = "text/plain";
+            if (fileLoc.contains("."))
+            {
+                String fileExt = fileLoc.substring(fileLoc.lastIndexOf('.') + 1);
+                
+                switch (fileExt.toLowerCase())
+                {
+                    case "html":
+                        contentType = "text/html";
+                        break;
+                    case "css":
+                        contentType = "text/css";
+                        break;
+                    case "js":
+                        contentType = "text/javascript";
+                        break;
+                    case "jpg":
+                    case "jpeg":
+                        contentType = "image/jpeg";
+                        break;
+                    case "txt":
+                        contentType = "text/plain";
+                        break;
+                    default: // all unsupported type set to text
+                        contentType = "text/plain";
+                        break;
+                }
+            }
+            
+            outToClient.writeBytes("Content-Length: " + numOfBytes + "\r\n");
+            System.out.println("Content-Length: " + numOfBytes + "\r\n");
+            outToClient.writeBytes("Content-Type: " + contentType + "\r\n");
+	    System.out.println("Content-Type: " + contentType + "\r\n");
+            //end of header
+            outToClient.writeBytes("\r\n");
 
 	    // send file content
-	    //outToClient.write(fileInBytes, 0, numOfBytes);
+	    outToClient.write(fileInBytes, 0, numOfBytes);
             
 	}  // end else (file found case)
 
@@ -188,12 +228,12 @@ public final class HTTPServer {
                 if (2 == args.length) {
                     // 2 args, port and path, no sanity check for path
                     http_root_path = args[1];
-                    //Add a "/" to end of path if needs
-                    if (!http_root_path.endsWith("/"))
-                    {
-                        http_root_path += "/";
-                    }
                 }
+            }
+            //Add a "/" to end of path if needs
+            if (!http_root_path.endsWith("/"))
+            {
+                http_root_path += "/";
             }
         }
     }
