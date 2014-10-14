@@ -13,17 +13,19 @@ public final class HTTPServer {
 
     private static ServerSocket welcomeSocket; //Listening
     private static Socket connectionSocket; //Connect to client
-    private static boolean isOK;
-    private static String errMsg;
     
     public static void main(String args[]) throws Exception  
     {
-        isOK = true;
-        errMsg = "";
+        boolean isOK = true;
+        String errMsg = "";
         String msg;
         
         // Get arguments
-	processArgs(args);
+	errMsg = processArgs(args);
+        if (!errMsg.equals(""))
+        {
+            isOK = false;
+        }
         
         if (!isOK) {
             System.err.println(errMsg);
@@ -205,11 +207,18 @@ public final class HTTPServer {
 	connectionSocket.close();
     } // end of generateResponse
     
-    private static void processArgs(String args[]) 
+    /*
+        Process command arguments
+        Return error if any.
+    */
+    private static String processArgs(String args[]) 
     {
         // allow the user to choose a different port, as arg[0]  
 	// allow the user to choose a different http_root_path, as arg[1] 
 	// display error on server stdout if usage is incorrect
+        String errMsg = "";
+        boolean isOK = true;
+        
         if (args.length > 2) {
             isOK = false;
             errMsg = "Too many arguments.";
@@ -236,6 +245,7 @@ public final class HTTPServer {
                 http_root_path += "/";
             }
         }
+        return errMsg;
     }
     
 } // end of class HTTPServer
